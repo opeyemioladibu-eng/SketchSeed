@@ -1,0 +1,16 @@
+{
+  "board": "esp32",
+  "project_name": "smart_led",
+  "components": [
+    {
+      "name": "button",
+      "type": "button",
+      "pin": 4
+    },
+    {
+      "name": "status_led",
+      "type": "led",
+      "pin": 5
+    }
+  ]
+}
