@@ -1,6 +1,6 @@
 # SketchSeed
 
-#### Video Demo: <https://youtu.be/Ae13EAd6cV4>
+#### Video Demo: https://youtu.be/Ae13EAd6cV4
 
 ## Overview
 
@@ -10,12 +10,12 @@ It validates component names, GPIO assignments, and supported hardware constrain
 
 ### Features
 
-- Generate Arduino starter code from a JSON configuration.
-- Validate GPIO assignments and detect conflicting pin usage.
-- Check component names and supported component types.
-- Catch common configuration errors before generating code.
-- Write generated files to a user-specified output directory.
-- Run automated tests with `pytest`.
+* Generate Arduino starter code from a JSON configuration.
+* Validate GPIO assignments and detect conflicting pin usage.
+* Check component names and supported component types.
+* Catch common configuration errors before generating code.
+* Write generated files to a user-specified output directory.
+* Run automated tests with `pytest`.
 
 ## Motivation
 
@@ -33,6 +33,12 @@ To run the automated tests, install `pytest`:
 python -m pip install pytest
 ```
 
+Alternatively, install the test dependency listed in `requirements.txt`:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
 ## How to Run SketchSeed
 
 Generate code from the example configuration:
@@ -43,8 +49,8 @@ python project.py examples/smart_led.json --out build/smart_led
 
 This creates the generated files in `build/smart_led/`:
 
-- `pins.h`
-- `smart_led.ino`
+* `pins.h`
+* `smart_led.ino`
 
 Open the generated files in the Arduino IDE and review them for your target board before compiling or uploading them.
 
@@ -64,15 +70,19 @@ The `examples/smart_led.json` file provides a sample configuration for a simple 
 
 This is the main program and contains the code-generation pipeline. Its main functions are:
 
-- **`load_config(path)`**: Reads and parses a JSON configuration file. It handles a missing file and malformed JSON with clear errors, and checks that the parsed JSON root is a dictionary.
-- **`validate_config(config)`**: Checks the configuration against the rules implemented in SketchSeed. These include supported boards and component types, identifier syntax, duplicate component names, GPIO conflicts, and applicable pin restrictions. Constants such as `SUPPORTED_BOARDS`, `SUPPORTED_TYPES`, `ESP32_MIN_PIN`, `ESP32_MAX_PIN`, and `ESP32_INPUT_ONLY_PINS` keep these rules in one place. The code uses `type(pin) is not int` to reject Boolean values, since Python treats `bool` as a subclass of `int`.
-- **`generate_sketch(config)`**: Converts a validated configuration into C++ source text. It generates a `pins.h` header with header guards and named pin constants, along with an `.ino` sketch containing setup code and starter logic for the configured components.
-- **`write_project(files, out_dir)`**: Creates the output directory when needed and writes the generated files using UTF-8 encoding.
-- **`main()`**: Parses command-line arguments with `argparse`, runs the pipeline, and returns an appropriate process exit status for success or failure.
+* **`load_config(path)`**: Reads and parses a JSON configuration file. It handles a missing file and malformed JSON with clear errors, and checks that the parsed JSON root is a dictionary.
+* **`validate_config(config)`**: Checks the configuration against the rules implemented in SketchSeed. These include supported boards and component types, identifier syntax, duplicate component names, GPIO conflicts, and applicable pin restrictions. Constants such as `SUPPORTED_BOARDS`, `SUPPORTED_TYPES`, `ESP32_MIN_PIN`, `ESP32_MAX_PIN`, and `ESP32_INPUT_ONLY_PINS` keep these rules in one place. The code uses `type(pin) is not int` to reject Boolean values, since Python treats `bool` as a subclass of `int`.
+* **`generate_sketch(config)`**: Converts a configuration into C++ source text. It generates a `pins.h` header with header guards and named pin constants, along with an `.ino` sketch containing setup code and starter logic for the configured components.
+* **`write_project(files, out_dir)`**: Creates the output directory when needed and writes the generated files using UTF-8 encoding.
+* **`main()`**: Parses command-line arguments with `argparse`, runs the pipeline, and exits with a non-zero status when configuration loading, validation, or file writing fails.
 
 ### 2. `test_project.py`
 
-This file contains the automated tests written with `pytest`. The tests cover the main functions and common edge cases, including missing files, malformed JSON, unsupported boards, invalid identifiers, GPIO conflicts, Boolean pin values, pin restrictions, and file creation. The `tmp_path` fixture allows tests to use temporary files and directories without cluttering the project folder.
+This file contains the automated tests written with `pytest`. The 12 test functions cover the main stages of the application and common edge cases, including valid configuration loading, missing files, malformed JSON, unsupported boards, invalid identifiers, GPIO conflicts, Boolean pin values, input-only pin restrictions, generated file contents, and file creation.
+
+The `tmp_path` fixture allows tests to use temporary files and directories without cluttering the project folder.
+
+The tests cover selected validation rules and generated-code properties; they do not yet verify every possible configuration or compile the generated C++.
 
 ### 3. `requirements.txt`
 
@@ -98,7 +108,11 @@ SketchSeed checks configuration rules in Python before writing the output files.
 
 ## Limitations
 
-SketchSeed is intentionally limited in scope. It supports only the boards and component types implemented in the current version. Its validation checks cannot guarantee that a physical circuit is wired correctly or that generated code will compile and behave as intended on every board configuration. Review the generated code and verify the target board's pin capabilities before compiling and testing it with hardware.
+SketchSeed is intentionally limited in scope. It supports only the boards and component types implemented in the current version. Its validation checks cannot guarantee that a physical circuit is wired correctly or that generated code will compile and behave as intended on every board configuration.
+
+The current GPIO checks use a simplified range of 0–39 and reject GPIOs 34–39 for LED outputs. These checks do not account for every ESP32 variant, development board, or pin restriction. A GPIO passing validation is not necessarily suitable for every application.
+
+Review the generated code and verify the target board's pin capabilities before compiling and testing it with hardware.
 
 ## Testing
 
@@ -110,6 +124,3 @@ python -m pytest -v
 
 The tests exercise the configuration-loading, validation, generation, and file-writing functions, including common invalid inputs and error cases.
 
-## Video Demonstration
-
-Replace the video-demo placeholder at the top of this README with the YouTube URL for the final demonstration before submitting the project.
